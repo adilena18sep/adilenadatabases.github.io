@@ -205,10 +205,15 @@ async function loadChecklist() {
 
     if (!data || data.length === 0) {
         container.innerHTML = `<div class="empty-state">Belum ada daftar belanja. Klik tombol "+ Tambah Belanja" untuk menambah.</div>`;
+        document.getElementById('checklist-total-price').innerText = formatRupiah(0);
         return;
     }
 
+    let totalPrice = 0;
+
     data.forEach(item => {
+        totalPrice += item.estimated_price || 0;
+
         const div = document.createElement('div');
         div.className = `checklist-item ${item.is_bought ? 'done' : ''}`;
 
@@ -220,6 +225,8 @@ async function loadChecklist() {
         `;
         container.appendChild(div);
     });
+
+    document.getElementById('checklist-total-price').innerText = formatRupiah(totalPrice);
 }
 
 // ==========================================
