@@ -1,0 +1,22 @@
+{
+  "name": "Adilena Inventory",
+  "short_name": "Adilena",
+  "description": "Sistem manajemen stok dan checklist belanja untuk bisnis kuliner Adilena",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#faf8f5",
+  "theme_color": "#e8952e",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "images/logo adilena.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "images/logo adilena.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adilena - Inventory & Database System</title>
+    <meta name="description" content="Sistem manajemen stok dan checklist belanja untuk bisnis kuliner Adilena">
+    
+    <!-- PWA / Mobile App Settings -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#e8952e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="images/logo adilena.png">
+
+    <link rel="stylesheet" href="styles.css">
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+    <header>
+        <div class="header-brand">
+            <img src="images/logo adilena.png" alt="Adilena Logo" class="header-logo">
+            <div class="header-text">
+                <h1>Adilena</h1>
+                <span class="header-subtitle">Inventory & Database</span>
+            </div>
+        </div>
+        <nav id="main-nav">
+            <button class="nav-btn active" data-tab="stock">
+                <span class="nav-icon">📦</span>
+                <span class="nav-label">Stok Barang</span>
+            </button>
+            <button class="nav-btn" data-tab="transactions">
+                <span class="nav-icon">🔄</span>
+                <span class="nav-label">Keluar Masuk</span>
+            </button>
+            <button class="nav-btn" data-tab="checklist">
+                <span class="nav-icon">🛒</span>
+                <span class="nav-label">Checklist Belanja</span>
+            </button>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Notifikasi jika belum setup Supabase -->
+        <div id="setup-alert" class="setup-alert" style="display: none;">
+            <span class="alert-icon">⚠️</span>
+            <div>
+                <strong>Supabase Belum Terhubung!</strong><br>
+                <span>Silakan buka <b>app.js</b> dan masukkan <code>SUPABASE_URL</code> serta <code>SUPABASE_ANON_KEY</code> Anda.</span>
+            </div>
+        </div>
+
+        <!-- STOK BARANG -->
+        <section id="stock" class="section active">
+            <div class="card">
+                <div class="card-header">
+                    <h2>📦 Inventory &amp; Stok Saat Ini</h2>
+                    <button class="btn" id="btn-add-stock" onclick="openModal('modal-stock')">
+                        <span>+</span> Tambah Barang
+                    </button>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nama Barang</th>
+                                <th>Kategori</th>
+                                <th>Jumlah</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="stock-tbody">
+                            <tr><td colspan="4" class="empty-state">Memuat data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- KELUAR MASUK -->
+        <section id="transactions" class="section">
+            <div class="card">
+                <div class="card-header">
+                    <h2>🔄 Catatan Keluar Masuk Barang</h2>
+                    <button class="btn" id="btn-add-transaction" onclick="openModal('modal-transaction')">
+                        <span>+</span> Catat Transaksi
+                    </button>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Tanggal</th>
+                                <th>Barang</th>
+                                <th>Tipe</th>
+                                <th>Jumlah</th>
+                                <th>Catatan</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactions-tbody">
+                            <tr><td colspan="5" class="empty-state">Memuat data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- CHECKLIST BELANJA -->
+        <section id="checklist" class="section">
+            <div class="card">
+                <div class="card-header">
+                    <h2>🛒 Daftar Belanja (Shopping List)</h2>
+                    <button class="btn" id="btn-add-checklist" onclick="openModal('modal-checklist')">
+                        <span>+</span> Tambah Belanja
+                    </button>
+                </div>
+                <div id="checklist-container">
+                    <div class="empty-state">Memuat data...</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>© 2026 Adilena — Tekwan Palembang Asli</p>
+    </footer>
+
+    <!-- ========== MODALS ========== -->
+
+    <!-- Modal Tambah Stok -->
+    <div id="modal-stock" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Tambah Barang Baru</h2>
+                <button class="modal-close" onclick="closeModal('modal-stock')">&times;</button>
+            </div>
+            <form id="form-stock">
+                <div class="form-group">
+                    <label for="s-name">Nama Barang</label>
+                    <input type="text" id="s-name" required placeholder="Contoh: Ikan Tenggiri Giling">
+                </div>
+                <div class="form-group">
+                    <label for="s-category">Kategori</label>
+                    <select id="s-category" required>
+                        <option value="Bahan Baku">Bahan Baku</option>
+                        <option value="Kemasan">Kemasan</option>
+                        <option value="Bumbu">Bumbu</option>
+                        <option value="Pelengkap">Pelengkap</option>
+                        <option value="Lainnya">Lainnya</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="s-qty">Jumlah Awal</label>
+                        <input type="number" id="s-qty" required value="0" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="s-unit">Satuan</label>
+                        <input type="text" id="s-unit" required placeholder="gram, pcs, pack">
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('modal-stock')">Batal</button>
+                    <button type="submit" class="btn">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Tambah Transaksi -->
+    <div id="modal-transaction" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Catat Transaksi</h2>
+                <button class="modal-close" onclick="closeModal('modal-transaction')">&times;</button>
+            </div>
+            <form id="form-transaction">
+                <div class="form-group">
+                    <label for="t-item">Pilih Barang</label>
+                    <select id="t-item" required>
+                        <!-- Dimuat via JS -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="t-type">Tipe Transaksi</label>
+                    <select id="t-type" required>
+                        <option value="IN">📥 Masuk (Beli / Retur)</option>
+                        <option value="OUT">📤 Keluar (Dipakai / Dibuang)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="t-qty">Jumlah</label>
+                    <input type="number" id="t-qty" required min="1" placeholder="Masukkan jumlah">
+                </div>
+                <div class="form-group">
+                    <label for="t-notes">Catatan <span class="label-optional">(opsional)</span></label>
+                    <input type="text" id="t-notes" placeholder="Contoh: Dipakai untuk PO Batch 1">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('modal-transaction')">Batal</button>
+                    <button type="submit" class="btn">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Tambah Checklist -->
+    <div id="modal-checklist" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Tambah Item Belanja</h2>
+                <button class="modal-close" onclick="closeModal('modal-checklist')">&times;</button>
+            </div>
+            <form id="form-checklist">
+                <div class="form-group">
+                    <label for="c-name">Nama Item</label>
+                    <input type="text" id="c-name" required placeholder="Contoh: Beli Cabai Rawit 1 Kg">
+                </div>
+                <div class="form-group">
+                    <label for="c-price">Estimasi Harga (Rp)</label>
+                    <input type="number" id="c-price" value="0" min="0">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('modal-checklist')">Batal</button>
+                    <button type="submit" class="btn">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    
+    <!-- Service Worker Registration for PWA -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                    })
+                    .catch(err => {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>
